@@ -49,7 +49,7 @@ module.exports = router => {
           if (error) {
             res.json({ info: 'Error while updating sms', error: error })
           }
-          res.json({ info: 'Status updated successfully.', body: sms })
+          res.json({ info: 'Sms updated successfully.', body: sms })
         })
       }
     })
