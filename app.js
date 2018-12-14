@@ -5,6 +5,8 @@ const routes = require('./routes/')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const mongoose = require('mongoose')
+const morgan = require('morgan')
+require('dotenv').config()
 
 const app = express()
 const router = express.Router()
@@ -12,7 +14,7 @@ const port = 3000
 
 // Set up database
 mongoose.connect(
-  'mongodb://localhost:27017/smsApp',
+  process.env.DATABASE_URI,
   {
     useNewUrlParser: true
   }
@@ -27,6 +29,7 @@ db.once('open', () => {
 })
 
 // Set up middleware
+app.use(morgan('dev'))
 app.use(cors())
 app.use(bodyParser.json())
 

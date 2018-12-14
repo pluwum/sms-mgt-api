@@ -3,24 +3,43 @@
 const Contact = require('../Models/Contact')
 const Sms = require('../Models/Sms')
 const _ = require('lodash')
+const authUtils = require('../utils/auth')
 
 module.exports = router => {
   const URL_PREFIX = '/contact'
+  const { verifyToken } = authUtils
 
   // Create Contact
   router.post(URL_PREFIX, (req, res) => {
-    var contact = new Contact(req.body)
-    contact.save(error => {
-      if (error) {
-        res.json({ info: 'Error while creating contact', error: error })
+    Contact.findOne(
+      { phoneNumber: req.body.phoneNumber },
+      (error, existingContact) => {
+        if (error) {
+          res.json({ info: 'Error while creating contact', error: error })
+        }
+
+        if (existingContact) {
+          res.status(400).json({
+            info: 'Error while creating contact',
+            error: 'Duplicate number'
+          })
+        } else {
+          var contact = new Contact(req.body)
+
+          contact.save(error => {
+            if (error) {
+              res.json({ info: 'Error while creating contact', error: error })
+            }
+            res.json({ info: 'Contact created successfully' })
+          })
+        }
       }
-      res.json({ info: 'Contact created successfully' })
-    })
+    )
   })
 
   // Get my contact details
-  router.get(`${URL_PREFIX}/:id`, (req, res) => {
-    Contact.findById(req.params.id, (error, contact) => {
+  router.get(`${URL_PREFIX}`, verifyToken, (req, res) => {
+    Contact.findById(req.decodedToken.contactId, (error, contact) => {
       if (error) {
         res.json({ info: 'Error while geting sms', error: error })
       }
@@ -29,8 +48,8 @@ module.exports = router => {
   })
 
   // Update Contact
-  router.put(`${URL_PREFIX}/:id`, (req, res) => {
-    Contact.findById(req.params.id, (error, contact) => {
+  router.put(`${URL_PREFIX}/:id`, verifyToken, (req, res) => {
+    Contact.findById(req.decodedToken.contactId, (error, contact) => {
       if (error) {
         res.json({ info: 'Error while updating Contact', error: error })
       }
@@ -46,18 +65,20 @@ module.exports = router => {
     })
   })
 
-  router.delete(`${URL_PREFIX}/:id`, function (req, res) {
-    Contact.findByIdAndRemove(req.params.id, (error, contact) => {
+  router.delete(`${URL_PREFIX}/`, verifyToken, (req, res) => {
+    const { contactId } = req.decodedToken
+
+    Contact.findByIdAndRemove(contactId, (error, contact) => {
       if (error) {
         res.json({ info: 'error while removing contact', error: error })
       }
       // TODO: probably best to use hook
-      Sms.deleteMany({ sender: req.params.id }, error => {
+      Sms.deleteMany({ sender: contactId }, error => {
         if (error) {
           res.json({ info: 'error while removing contact', error: error })
         }
         Sms.updateMany(
-          { receiver: req.params.id },
+          { receiver: contactId },
           {
             receiver: 'deleted_user'
           },
@@ -67,7 +88,7 @@ module.exports = router => {
             }
             res.json({
               info: 'contact removed successfully',
-              body: req.params.id
+              body: contactId
             })
           }
         )
