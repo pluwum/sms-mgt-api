@@ -1,4 +1,6 @@
-const sample = require('./sample.js')
+'use strict'
+
+const sms = require('./sms')
 module.exports = router => {
-  sample(router)
+  sms(router)
 }
