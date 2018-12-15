@@ -1,11 +1,12 @@
 'use strict'
 
 const express = require('express')
-const routes = require('./routes/')
+const { routes, handle404, handle500 } = require('./Routes')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const morgan = require('morgan')
+
 require('dotenv').config()
 
 const app = express()
@@ -36,4 +37,7 @@ app.use(bodyParser.json())
 // Set up routes
 routes(router)
 app.use('/api', router)
+app.use(handle404())
+app.use(handle500())
+
 app.listen(port, () => console.log(`server running on ${port}`))

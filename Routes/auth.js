@@ -13,7 +13,7 @@ module.exports = router => {
   router.post(URL_PREFIX, (req, res, next) => {
     Contact.findOne({ phoneNumber: req.body.phoneNumber }, (error, contact) => {
       if (error) {
-        sendResponse(
+        return sendResponse(
           res,
           null,
           'Error while Authenticating contact',
@@ -23,7 +23,7 @@ module.exports = router => {
         )
       }
       if (!contact) {
-        sendResponse(
+        return sendResponse(
           res,
           null,
           'Authentication failed: Contact does not exist failed',
@@ -32,7 +32,7 @@ module.exports = router => {
         )
       }
       if (req.body.passCode !== contact.passCode) {
-        sendResponse(
+        return sendResponse(
           res,
           null,
           'Authentication failed: PassCode mismatch',
@@ -50,10 +50,6 @@ module.exports = router => {
           expiresIn: 86400
         })
         // return the information including token
-        res.json({
-          info: 'Successfully authenticated',
-          token: token
-        })
         sendResponse(res, token, 'Successfully authenticated', true, 200)
       }
     })
