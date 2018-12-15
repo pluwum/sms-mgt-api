@@ -3,11 +3,11 @@
 const Contact = require('../Models/Contact')
 const Sms = require('../Models/Sms')
 const _ = require('lodash')
-const authUtils = require('../utils/auth')
+const { verifyToken } = require('../utils/auth')
+const { sendResponse } = require('../utils/misc')
 
 module.exports = router => {
   const URL_PREFIX = '/contact'
-  const { verifyToken } = authUtils
 
   // Create Contact
   router.post(URL_PREFIX, (req, res) => {
@@ -15,22 +15,40 @@ module.exports = router => {
       { phoneNumber: req.body.phoneNumber },
       (error, existingContact) => {
         if (error) {
-          res.json({ info: 'Error while creating contact', error: error })
+          sendResponse(
+            res,
+            null,
+            'Error while creating contact',
+            false,
+            500,
+            error
+          )
         }
 
         if (existingContact) {
-          res.status(400).json({
-            info: 'Error while creating contact',
-            error: 'Duplicate number'
-          })
+          sendResponse(
+            res,
+            null,
+            'Error while creating contact: Duplicate number',
+            false,
+            400
+          )
         } else {
           var contact = new Contact(req.body)
 
           contact.save(error => {
             if (error) {
-              res.json({ info: 'Error while creating contact', error: error })
+              sendResponse(
+                res,
+                null,
+                'Error while creating contact',
+                false,
+                500,
+                error
+              )
             }
-            res.json({ info: 'Contact created successfully' })
+
+            sendResponse(res, null, 'Contact created successfully', true, 201)
           })
         }
       }
@@ -41,9 +59,16 @@ module.exports = router => {
   router.get(`${URL_PREFIX}`, verifyToken, (req, res) => {
     Contact.findById(req.decodedToken.contactId, (error, contact) => {
       if (error) {
-        res.json({ info: 'Error while geting sms', error: error })
+        sendResponse(
+          res,
+          null,
+          'Error while getting contact',
+          false,
+          500,
+          error
+        )
       }
-      res.json(contact)
+      sendResponse(res, contact)
     })
   })
 
@@ -51,15 +76,30 @@ module.exports = router => {
   router.put(`${URL_PREFIX}/:id`, verifyToken, (req, res) => {
     Contact.findById(req.decodedToken.contactId, (error, contact) => {
       if (error) {
-        res.json({ info: 'Error while updating Contact', error: error })
+        sendResponse(
+          res,
+          null,
+          'Error while updating Contact',
+          false,
+          500,
+          error
+        )
       }
       if (contact) {
         _.merge(contact, req.body)
         contact.save(error => {
           if (error) {
-            res.json({ info: 'Error while updating Contact', error: error })
+            sendResponse(
+              res,
+              null,
+              'Error while updating Contact',
+              false,
+              500,
+              error
+            )
           }
-          res.json({ info: 'Contact updated successfully.', body: contact })
+
+          sendResponse(res, contact, 'Contact updated successfully', true)
         })
       }
     })
@@ -70,12 +110,26 @@ module.exports = router => {
 
     Contact.findByIdAndRemove(contactId, (error, contact) => {
       if (error) {
-        res.json({ info: 'error while removing contact', error: error })
+        sendResponse(
+          res,
+          null,
+          'Error while removing contact',
+          false,
+          500,
+          error
+        )
       }
       // TODO: probably best to use hook
       Sms.deleteMany({ sender: contactId }, error => {
         if (error) {
-          res.json({ info: 'error while removing contact', error: error })
+          sendResponse(
+            res,
+            null,
+            'Error while removing contact',
+            false,
+            500,
+            error
+          )
         }
         Sms.updateMany(
           { receiver: contactId },
@@ -84,12 +138,17 @@ module.exports = router => {
           },
           error => {
             if (error) {
-              res.json({ info: 'error while removing contact', error: error })
+              sendResponse(
+                res,
+                null,
+                'Error while removing contact',
+                false,
+                500,
+                error
+              )
             }
-            res.json({
-              info: 'contact removed successfully',
-              body: contactId
-            })
+
+            sendResponse(res, contactId, 'Contact removed successfully', true)
           }
         )
       })

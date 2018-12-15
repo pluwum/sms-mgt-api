@@ -2,6 +2,8 @@
 
 const Contact = require('../Models/Contact')
 const jwt = require('jsonwebtoken')
+const { sendResponse } = require('../utils/misc')
+
 require('dotenv').config()
 
 const URL_PREFIX = '/authenticate'
@@ -11,15 +13,32 @@ module.exports = router => {
   router.post(URL_PREFIX, (req, res, next) => {
     Contact.findOne({ phoneNumber: req.body.phoneNumber }, (error, contact) => {
       if (error) {
-        res.json({ info: 'Error while Authenticating contact', error: error })
+        sendResponse(
+          res,
+          null,
+          'Error while Authenticating contact',
+          false,
+          500,
+          error
+        )
       }
       if (!contact) {
-        res.json({
-          info: 'Authentication failed: Contact does not exist failed'
-        })
+        sendResponse(
+          res,
+          null,
+          'Authentication failed: Contact does not exist failed',
+          false,
+          404
+        )
       }
       if (req.body.passCode !== contact.passCode) {
-        res.json({ info: 'Authentication failed: PassCode mismatch' + token })
+        sendResponse(
+          res,
+          null,
+          'Authentication failed: PassCode mismatch',
+          false,
+          400
+        )
       } else {
         const { phoneNumber, _id: contactId } = contact
         const payload = {
@@ -35,6 +54,7 @@ module.exports = router => {
           info: 'Successfully authenticated',
           token: token
         })
+        sendResponse(res, token, 'Successfully authenticated', true, 200)
       }
     })
   })

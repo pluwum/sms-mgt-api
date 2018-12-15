@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
+const { sendResponse } = require('./misc')
 
-const verifyToken = function (req, res, next) {
+module.exports.verifyToken = function (req, res, next) {
   var token =
     req.body.token ||
     req.query.token ||
@@ -12,21 +13,20 @@ const verifyToken = function (req, res, next) {
   if (token) {
     jwt.verify(token, process.env.SECRET, function (error, decodedToken) {
       if (error) {
-        return res.json({
-          success: false,
-          message: 'Failed to authenticate token.'
-        })
+        return sendResponse(
+          res,
+          null,
+          'Failed to authenticate token.',
+          false,
+          403,
+          error
+        )
       } else {
         req.decodedToken = decodedToken
         next()
       }
     })
   } else {
-    return res.status(403).json({
-      success: false,
-      info: 'No token provided.'
-    })
+    return sendResponse(res, null, 'No token provided.', false, 403)
   }
 }
-
-module.exports.verifyToken = verifyToken
