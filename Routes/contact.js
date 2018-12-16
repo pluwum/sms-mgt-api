@@ -61,7 +61,7 @@ module.exports = router => {
             )
           }
 
-          sendResponse(res, null, 'Contact created successfully', true, 201)
+          sendResponse(res, contact, 'Contact created successfully', true, 201)
         })
       }
     })

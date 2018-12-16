@@ -3,7 +3,11 @@
 const Sms = require('../Models/Sms')
 const _ = require('lodash')
 const { verifyToken } = require('../utils/auth')
-const { sendResponse, sendValidationErrorResponse } = require('../utils/misc')
+const {
+  sendResponse,
+  sendValidationErrorResponse,
+  validateInput
+} = require('../utils/misc')
 
 module.exports = router => {
   const URL_PREFIX = '/sms'
@@ -51,7 +55,7 @@ module.exports = router => {
         )
       }
 
-      sendResponse(res, null, 'SMS sent successfully', true, 200)
+      sendResponse(res, sms, 'SMS sent successfully', true, 200)
     })
   })
 
