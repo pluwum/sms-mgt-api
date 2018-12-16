@@ -20,6 +20,6 @@ module.exports.handle404 = () => {
 module.exports.handle500 = () => {
   // handle exceptions
   return function (err, req, res, next) {
-    return res.status(500).send({ error: err })
+    // return res.status(500).send({ error: err })
   }
 }

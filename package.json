@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "description": "SMS Management Application API",
   "main": "app.js",
+  "scripts": {
+    "test": "NODE_ENV=testing nyc mocha tests/*.spec.js --exit",
+    "start": "NODE_ENV=development node app.js",
+    "coverage": "nyc report --reporter=text-lcov yarn run test",
+    "coveralls": "yarn run coverage | coveralls",
+    "build": "NODE_ENV=production node app.js"
+  },
   "repository": {
     "url": "https://github.com/pluwum/sms-mgt-api",
     "type": "git"
@@ -11,14 +18,19 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.18.3",
+    "chai": "^4.2.0",
     "cors": "^2.8.5",
+    "coveralls": "^3.0.2",
     "dotenv": "^6.2.0",
     "eslint": "^5.10.0",
     "express": "^4.16.4",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",
+    "mocha": "^5.2.0",
     "mongoose": "^5.3.16",
     "morgan": "^1.9.1",
-    "nodemon": "^1.18.8"
+    "nodemon": "^1.18.8",
+    "nyc": "^13.1.0",
+    "supertest": "^3.3.0"
   }
 }

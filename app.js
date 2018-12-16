@@ -1,33 +1,24 @@
 'use strict'
 
+require('dotenv').config()
 const express = require('express')
 const { routes, handle404, handle500 } = require('./Routes')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const mongoose = require('mongoose')
-const morgan = require('morgan')
-
 require('dotenv').config()
-
+const morgan = require('morgan')
+const { connectDatabase } = require('./utils/database')
 const app = express()
 const router = express.Router()
-const port = 3000
 
-// Set up database
-mongoose.connect(
-  process.env.DATABASE_URI,
-  {
-    useNewUrlParser: true
-  }
-)
-const db = mongoose.connection
+var port = 3000
 
-db.on('error', err => {
-  console.error(`Error while connecting to DB: ${err.message}`)
-})
-db.once('open', () => {
-  console.log('DB connected successfully!')
-})
+if (process.env.NODE_ENV === 'testing') {
+  port = process.env.TEST_PORT
+}
+
+// Create database connection
+const db = connectDatabase()
 
 // Set up middleware
 app.use(morgan('dev'))
@@ -36,8 +27,10 @@ app.use(bodyParser.json())
 
 // Set up routes
 routes(router)
-app.use('/api', router)
+app.use('/api/v1', router)
 app.use(handle404())
 app.use(handle500())
 
 app.listen(port, () => console.log(`server running on ${port}`))
+
+module.exports = app
